@@ -112,21 +112,27 @@ function parseArgs(argv) {
 
 function loadConfig() {
   try {
-    return { barAscii: !!JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8')).barAscii };
+    const c = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+    return {
+      barAscii: !!c.barAscii,
+      barSegments: Number.isInteger(c.barSegments) && c.barSegments > 0 ? c.barSegments : 50,
+    };
   }
   catch {
-    return { barAscii: false };
+    return { barAscii: false, barSegments: 50 };
   }
 }
 
-const ASCII = parseArgs(process.argv.slice(2)) || loadConfig().barAscii;
+const _config = loadConfig();
+const ASCII = parseArgs(process.argv.slice(2)) || _config.barAscii;
+const BAR_SEGMENTS = _config.barSegments;
 
 // ---------- 进度条 ----------
 function fmtBar(pct) {
-  const segments = 5;
+  const segments = BAR_SEGMENTS;
   const filled = ASCII ? '#' : '▓';
   const empty = ASCII ? '-' : '░';
-  const on = Math.max(0, Math.min(segments, Math.round(pct / 20)));
+  const on = Math.max(0, Math.min(segments, Math.round((pct / 100) * segments)));
   const bar = filled.repeat(on) + empty.repeat(segments - on);
   const color = pct < 50 ? C.green : pct < 80 ? C.yellow : C.red;
   return `${color}${bar}${C.reset}`;
