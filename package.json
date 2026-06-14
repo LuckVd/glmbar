@@ -1,0 +1,19 @@
+{
+  "name": "glmbar",
+  "version": "0.1.0",
+  "description": "StatusLine for Claude Code, optimized for GLM Coding Plan (subscription)",
+  "type": "commonjs",
+  "main": "src/glmbar.cjs",
+  "bin": {
+    "glmbar": "src/glmbar.cjs"
+  },
+  "scripts": {
+    "start": "node src/glmbar.cjs",
+    "test": "echo '{\"transcript_path\":\"/tmp/x\",\"model\":{\"display_name\":\"GLM-5.2\"},\"workspace\":{\"current_dir\":\"/opt/projects/glmbar\"}}' | node src/glmbar.cjs"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "license": "MIT",
+  "author": "LuckVd"
+}
