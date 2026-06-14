@@ -364,7 +364,7 @@ function renderContext(input) {
   const used = parsed.lastInput;
   const pct = max ? (used / max) * 100 : 0;
   const color = pct < 50 ? C.green : pct < 80 ? C.yellow : C.red;
-  return `${color}${fmtUsed(used)}/${fmtMax(max)} ${fmtBar(pct)} (${pct.toFixed(1)}%)${C.reset}`;
+  return `${color}${fmtUsed(used)}/${fmtMax(max)} (${pct.toFixed(1)}%)${C.reset}`;
 }
 
 function renderSessionTokens(input) {
