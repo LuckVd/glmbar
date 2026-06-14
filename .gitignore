@@ -1,6 +1,9 @@
 # 依赖
 node_modules/
 
+# npm link 副产物(bin/glmbar 符号链接)
+bin/
+
 # 日志
 *.log
 npm-debug.log*
