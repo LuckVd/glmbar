@@ -115,26 +115,36 @@ function loadConfig() {
     const c = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
     return {
       barAscii: !!c.barAscii,
-      barSegments: Number.isInteger(c.barSegments) && c.barSegments > 0 ? c.barSegments : 50,
+      barWidth: Number.isInteger(c.barWidth) && c.barWidth > 0 ? c.barWidth : 20,
     };
   }
   catch {
-    return { barAscii: false, barSegments: 50 };
+    return { barAscii: false, barWidth: 20 };
   }
 }
 
 const _config = loadConfig();
 const ASCII = parseArgs(process.argv.slice(2)) || _config.barAscii;
-const BAR_SEGMENTS = _config.barSegments;
+const BAR_WIDTH = _config.barWidth;
 
 // ---------- 进度条 ----------
+// 用 Unicode block 元素,每个字符分 8 级(█▉▊▋▌▍▎▏),精度 = 宽度 × 8。
+const BLOCKS = ['', '▏', '▎', '▍', '▌', '▋', '▊', '▉', '█'];
+
 function fmtBar(pct) {
-  const segments = BAR_SEGMENTS;
-  const filled = ASCII ? '#' : '▓';
-  const empty = ASCII ? '-' : '░';
-  const on = Math.max(0, Math.min(segments, Math.round((pct / 100) * segments)));
-  const bar = filled.repeat(on) + empty.repeat(segments - on);
+  const w = BAR_WIDTH;
   const color = pct < 50 ? C.green : pct < 80 ? C.yellow : C.red;
+  if (ASCII) {
+    const on = Math.max(0, Math.min(w, Math.round((pct / 100) * w)));
+    return `${color}${'#'.repeat(on)}${'-'.repeat(w - on)}${C.reset}`;
+  }
+  const total = Math.max(0, Math.min(w * 8, Math.round((pct / 100) * w * 8)));
+  const full = Math.floor(total / 8);
+  const partial = total % 8;
+  let bar = '█'.repeat(full);
+  if (partial > 0) bar += BLOCKS[partial];
+  const filled = full + (partial > 0 ? 1 : 0);
+  bar += '░'.repeat(Math.max(0, w - filled));
   return `${color}${bar}${C.reset}`;
 }
 
