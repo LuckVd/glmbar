@@ -11,6 +11,7 @@ const path = require('node:path');
 const os = require('node:os');
 const https = require('node:https');
 const { execSync } = require('node:child_process');
+const anim = require('./anim.cjs');
 
 // ---------- 颜色（Catppuccin Mocha, truecolor）----------
 const C = {
@@ -35,6 +36,7 @@ const CACHE_DIR = path.join(HOME, '.claude', 'glmbar');
 const QUOTA_CACHE = path.join(CACHE_DIR, 'quota-cache.json');
 const ACTIVE_AGENT_DIR = path.join(CACHE_DIR, 'active');
 const ROSTER_PATH = path.join(HOME, '.claude', 'daemon', 'roster.json');
+const CONFIG_PATH = path.join(CACHE_DIR, 'config.json');
 const QUOTA_TTL_MS = 10 * 60 * 1000;
 
 const _settingsCache = { v: undefined };
@@ -101,6 +103,46 @@ function fmtRemaining(ms) {
   }
   if (h > 0) return `${h}h${m}m`;
   return `${m}m`;
+}
+
+// ---------- 配置 / 命令行参数 ----------
+function parseArgs(argv) {
+  const out = { anim: undefined, ascii: false, animTest: null };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--no-anim') out.anim = false;
+    else if (a === '--anim') out.anim = true;
+    else if (a === '--ascii') out.ascii = true;
+    else if (a === '--anim-test' && i + 1 < argv.length) out.animTest = argv[++i];
+  }
+  return out;
+}
+
+function loadConfig() {
+  try {
+    const c = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+    return { animations: c.animations !== false, barAscii: !!c.barAscii };
+  }
+  catch {
+    return { animations: true, barAscii: false };
+  }
+}
+
+const _args = parseArgs(process.argv.slice(2));
+const _config = loadConfig();
+const ASCII = _args.ascii || _config.barAscii;
+const ANIM_ON = _args.anim !== undefined ? _args.anim : _config.animations;
+const ANIM_TEST = _args.animTest || null;
+
+// ---------- 进度条 ----------
+function fmtBar(pct) {
+  const segments = 5;
+  const filled = ASCII ? '#' : '▓';
+  const empty = ASCII ? '-' : '░';
+  const on = Math.max(0, Math.min(segments, Math.round(pct / 20)));
+  const bar = filled.repeat(on) + empty.repeat(segments - on);
+  const color = pct < 50 ? C.green : pct < 80 ? C.yellow : C.red;
+  return `${color}${bar}${C.reset}`;
 }
 
 // ---------- Git ----------
@@ -319,7 +361,7 @@ function renderContext(input) {
   const used = parsed.lastInput;
   const pct = max ? (used / max) * 100 : 0;
   const color = pct < 50 ? C.green : pct < 80 ? C.yellow : C.red;
-  return `${color}${fmtUsed(used)}/${fmtMax(max)}(${pct.toFixed(1)}%)${C.reset}`;
+  return `${color}${fmtUsed(used)}/${fmtMax(max)} ${fmtBar(pct)} (${pct.toFixed(1)}%)${C.reset}`;
 }
 
 function renderSessionTokens(input) {
@@ -361,7 +403,7 @@ function renderTokenQuota(limits) {
   const parts = tokens.map((l) => {
     const pct = l.percentage ?? 0;
     const color = pct < 50 ? C.green : pct < 80 ? C.yellow : C.red;
-    let s = `${color}${limitLabel(l)} ${pct}%${C.reset}`;
+    let s = `${color}${limitLabel(l)} ${fmtBar(pct)} ${pct}%${C.reset}`;
     if (l.nextResetTime) {
       const rem = l.nextResetTime - Date.now();
       if (rem > 0) s += `${C.dim}(${fmtRemaining(rem)})${C.reset}`;
@@ -376,7 +418,8 @@ function renderMcp(limits) {
   if (!mcp) return null;
   const cur = mcp.currentValue ?? 0;
   const total = mcp.usage ?? 0;
-  return `${C.peach}MCP ${cur}/${total}${C.reset}`;
+  const pct = mcp.percentage ?? 0;
+  return `${C.peach}MCP ${cur}/${total} ${fmtBar(pct)}${C.reset}`;
 }
 
 // ---------- 主流程 ----------
@@ -395,7 +438,12 @@ async function main() {
   ];
   const results = renderers.map((f) => { try { return f(); } catch { return null; } });
   const parts = results.filter((p) => p !== null && p !== undefined);
-  process.stdout.write(parts.join(' | ') + '\n');
+  let line = parts.join(' | ');
+  if (ANIM_ON) {
+    const af = anim.currentAnim(Date.now(), { force: ANIM_TEST });
+    if (af) line = anim.renderAnimFrame(af.anim, af.frame, line);
+  }
+  process.stdout.write(line + '\n');
 }
 
 main();
