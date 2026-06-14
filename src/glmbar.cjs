@@ -136,16 +136,16 @@ function fmtBar(pct) {
   const color = pct < 50 ? C.green : pct < 80 ? C.yellow : C.red;
   if (ASCII) {
     const on = Math.max(0, Math.min(w, Math.round((pct / 100) * w)));
-    return `${color}${'#'.repeat(on)}${'-'.repeat(w - on)}${C.reset}`;
+    return `${color}[${'#'.repeat(on)}${'-'.repeat(w - on)}]${C.reset}`;
   }
   const total = Math.max(0, Math.min(w * 8, Math.round((pct / 100) * w * 8)));
   const full = Math.floor(total / 8);
   const partial = total % 8;
+  const filled = full + (partial > 0 ? 1 : 0);
   let bar = '█'.repeat(full);
   if (partial > 0) bar += BLOCKS[partial];
-  const filled = full + (partial > 0 ? 1 : 0);
-  bar += '░'.repeat(Math.max(0, w - filled));
-  return `${color}${bar}${C.reset}`;
+  // 方括号界定总长;括号内 ─ 做线槽(灰 dim)、实心 block 填充(彩色)
+  return `${color}[${bar}${C.reset}${C.dim}${'─'.repeat(Math.max(0, w - filled))}${C.reset}${color}]${C.reset}`;
 }
 
 // ---------- Git ----------
