@@ -115,11 +115,11 @@ function loadConfig() {
     const c = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
     return {
       barAscii: !!c.barAscii,
-      barWidth: Number.isInteger(c.barWidth) && c.barWidth > 0 ? c.barWidth : 20,
+      barWidth: Number.isInteger(c.barWidth) && c.barWidth > 0 ? c.barWidth : 7,
     };
   }
   catch {
-    return { barAscii: false, barWidth: 20 };
+    return { barAscii: false, barWidth: 7 };
   }
 }
 
