@@ -11,7 +11,6 @@ const path = require('node:path');
 const os = require('node:os');
 const https = require('node:https');
 const { execSync } = require('node:child_process');
-const anim = require('./anim.cjs');
 
 // ---------- 颜色（Catppuccin Mocha, truecolor）----------
 const C = {
@@ -107,32 +106,20 @@ function fmtRemaining(ms) {
 
 // ---------- 配置 / 命令行参数 ----------
 function parseArgs(argv) {
-  const out = { anim: undefined, ascii: false, animTest: null };
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === '--no-anim') out.anim = false;
-    else if (a === '--anim') out.anim = true;
-    else if (a === '--ascii') out.ascii = true;
-    else if (a === '--anim-test' && i + 1 < argv.length) out.animTest = argv[++i];
-  }
-  return out;
+  for (const a of argv) if (a === '--ascii') return true;
+  return false;
 }
 
 function loadConfig() {
   try {
-    const c = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
-    return { animations: c.animations !== false, barAscii: !!c.barAscii };
+    return { barAscii: !!JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8')).barAscii };
   }
   catch {
-    return { animations: true, barAscii: false };
+    return { barAscii: false };
   }
 }
 
-const _args = parseArgs(process.argv.slice(2));
-const _config = loadConfig();
-const ASCII = _args.ascii || _config.barAscii;
-const ANIM_ON = _args.anim !== undefined ? _args.anim : _config.animations;
-const ANIM_TEST = _args.animTest || null;
+const ASCII = parseArgs(process.argv.slice(2)) || loadConfig().barAscii;
 
 // ---------- 进度条 ----------
 function fmtBar(pct) {
@@ -438,12 +425,7 @@ async function main() {
   ];
   const results = renderers.map((f) => { try { return f(); } catch { return null; } });
   const parts = results.filter((p) => p !== null && p !== undefined);
-  let line = parts.join(' | ');
-  if (ANIM_ON) {
-    const af = anim.currentAnim(Date.now(), { force: ANIM_TEST });
-    if (af) line = anim.renderAnimFrame(af.anim, af.frame, line);
-  }
-  process.stdout.write(line + '\n');
+  process.stdout.write(parts.join(' | ') + '\n');
 }
 
 main();
