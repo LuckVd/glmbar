@@ -405,8 +405,8 @@ function renderMcp(limits) {
   if (!mcp) return null;
   const cur = mcp.currentValue ?? 0;
   const total = mcp.usage ?? 0;
-  const pct = mcp.percentage ?? 0;
-  return `${C.peach}MCP ${cur}/${total} ${fmtBar(pct)}${C.reset}`;
+  const pct = total > 0 ? (cur / total) * 100 : 0;
+  return `${C.peach}MCP ${cur}/${total} ${pct.toFixed(1)}%${C.reset}`;
 }
 
 // ---------- 主流程 ----------
