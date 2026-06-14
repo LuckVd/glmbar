@@ -420,8 +420,8 @@ async function main() {
     () => renderAgents(input),
     () => renderModel(input),
     () => renderTokenQuota(limits),
-    () => renderMcp(limits),
     () => renderContext(input),
+    () => renderMcp(limits),
   ];
   const results = renderers.map((f) => { try { return f(); } catch { return null; } });
   const parts = results.filter((p) => p !== null && p !== undefined);
