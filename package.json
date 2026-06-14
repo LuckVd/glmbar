@@ -1,5 +1,5 @@
 {
-  "name": "glmbar",
+  "name": "@luckvd/glmbar",
   "version": "0.1.0",
   "description": "Claude Code statusline for GLM Coding Plan (subscription)",
   "type": "commonjs",

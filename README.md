@@ -53,8 +53,8 @@ echo '{"model":{"display_name":"GLM-5.2"},"workspace":{"current_dir":"/opt/proje
 ### 1. 安装
 
 ```bash
-cd /opt/projects/glmbar
-npm link          # 让 glmbar 全局可用
+npm install -g @luckvd/glmbar   # 从 npm 安装,提供 glmbar 命令
+# 或从源码:cd /opt/projects/glmbar && npm link
 ```
 
 ### 2. 启用状态栏
