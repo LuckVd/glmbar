@@ -2,13 +2,15 @@
 
 > Claude Code 状态栏,专为 **GLM Coding Plan**(订阅制)优化。
 
-## 为什么另起炉灶
+## 关于 glmbar
 
-通用状态栏(如 ccbar)多按「按量计费」假设设计 —— `token × 单价 = 花费`。
-但 GLM Coding Plan 是**订阅制**:套餐额度(5h 窗口 / 月度)才是真正的约束,
-按量估算的「花费」对订阅用户意义有限,甚至误导。
+glmbar 是一个独立的 [Claude Code](https://claude.com/claude-code) 状态栏,
+专为 **GLM Coding Plan**(订阅制)打造。
 
-glmbar 围绕订阅制用户的真实关切重新设计显示内容。
+GLM Coding Plan 按套餐额度计费(5h 窗口 / 月度),而非按量计费——
+真正的约束是「额度还剩多少、什么时候刷新」,而不是「这次花了多少钱」。
+glmbar 围绕这个核心关切组织状态栏:本次会话 token、套餐额度使用率、
+上下文剩余、Git 状态,让「该不该收着用、何时 /clear」一目了然。
 
 ## 状态栏示例
 
